@@ -5,6 +5,7 @@ import {
   Mail, Phone, MapPin, Send, CheckCircle,
   AlertCircle, Loader2, MessageCircle, Sparkles, Clock,
 } from "lucide-react";
+import { insertContact } from "../../lib/supabase";
 
 const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || "service_tvpyx6f";
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_t8u57ro";
@@ -155,6 +156,7 @@ export const ContactSection: React.FC = () => {
     setStatus("loading");
     setErrorMsg("");
     try {
+      // 1. Send email notification via EmailJS
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
@@ -167,17 +169,58 @@ export const ContactSection: React.FC = () => {
         },
         EMAILJS_PUBLIC_KEY,
       );
+
+      // 2. Save the message to Supabase database so it registers in the Admin Panel
+      const contactMessage = form.phone.trim()
+        ? `[Phone: ${form.phone.trim()}]\n\n${form.message.trim()}`
+        : form.message.trim();
+
+      const { error: dbError } = await insertContact({
+        name: form.from_name.trim(),
+        email: form.reply_to.trim(),
+        message: contactMessage,
+      });
+
+      if (dbError) {
+        throw new Error(`Database save failed: ${dbError.message}`);
+      }
+
       setStatus("success");
       setForm(EMPTY_FORM);
     } catch (err: unknown) {
-      console.error("EmailJS error:", err);
+      console.error("Contact submit error:", err);
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMsg(msg || "Failed to send. Please try WhatsApp instead.");
       setStatus("error");
     }
   };
 
-  const openWhatsApp = () => {
+  const openWhatsApp = async () => {
+    const hasName = form.from_name.trim();
+    const hasEmail = form.reply_to.trim();
+    const hasMessage = form.message.trim();
+
+    // If the form has been filled out, save the message details to Supabase database so it registers in the Admin Panel
+    if (hasName && hasEmail && hasMessage) {
+      try {
+        const contactMessage = form.phone.trim()
+          ? `[Phone: ${form.phone.trim()}] [Via WhatsApp Link]\n\n${form.message.trim()}`
+          : `[Via WhatsApp Link]\n\n${form.message.trim()}`;
+
+        await insertContact({
+          name: form.from_name.trim(),
+          email: form.reply_to.trim(),
+          message: contactMessage,
+        });
+
+        // Reset the form and trigger the success screen state
+        setForm(EMPTY_FORM);
+        setStatus("success");
+      } catch (err: unknown) {
+        console.error("Failed to save WhatsApp message to DB:", err);
+      }
+    }
+
     const text = encodeURIComponent(
       `Hello Elite Glow Salon! ✨\n\nI'd like to get in touch.\n\n*Name:* ${form.from_name || "—"}\n*Email:* ${form.reply_to || "—"}\n*Phone:* ${form.phone || "—"}\n\n*Message:* ${form.message || "—"}`
     );

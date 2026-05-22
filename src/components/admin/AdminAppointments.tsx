@@ -89,20 +89,89 @@ export const AdminAppointments: React.FC = () => {
 
   const handleWhatsApp = async (a: Appointment) => {
     let message = "";
-    
+    // U+2756 ❖ — confirmed to render correctly on all WhatsApp versions
+    const D = "\u2756";
+    const SEP = "- - - - - - - - - - - -";
+
     switch(a.status) {
       case "pending":
       case "confirmed":
-        message = `Hello ${a.customer_name}! ❖\n\nYour appointment at *Elite Glow Salon* is confirmed.\n\n❖ *Date:* ${a.appointment_date}\n❖ *Time:* ${a.appointment_time}\n❖ *Service:* ${a.service}\n\nSee you soon! ❖`;
+        message = [
+          `*${D} Elite Glow Salon*`,
+          `*Appointment Confirmed*`,
+          SEP,
+          ``,
+          `Hello *${a.customer_name}*,`,
+          `Your appointment is *confirmed!*`,
+          ``,
+          `*${D} Appointment Details*`,
+          `${D} Service: ${a.service}`,
+          `${D} Date: ${a.appointment_date}`,
+          `${D} Time: ${a.appointment_time}`,
+          ``,
+          SEP,
+          `Please arrive 5 minutes early.`,
+          `_See you soon!_`,
+        ].join("\n");
         break;
+
       case "cancellation_requested":
-        message = `Hello ${a.customer_name}! ❖\n\nWe have received your cancellation request for your appointment.\n\n❖ *Date:* ${a.appointment_date}\n❖ *Time:* ${a.appointment_time}\n❖ *Service:* ${a.service}\n\nOur team will process it shortly. ❖`;
+        message = [
+          `*${D} Elite Glow Salon*`,
+          `*Cancellation Request Received*`,
+          SEP,
+          ``,
+          `Hello *${a.customer_name}*,`,
+          `We've received your cancellation request.`,
+          ``,
+          `*${D} Appointment Details*`,
+          `${D} Service: ${a.service}`,
+          `${D} Date: ${a.appointment_date}`,
+          `${D} Time: ${a.appointment_time}`,
+          ``,
+          SEP,
+          `Our team will review and confirm it shortly.`,
+          `_Reply to this message if you need help._`,
+        ].join("\n");
         break;
+
       case "cancelled":
-        message = `Hello ${a.customer_name}! ❖\n\nWe have received your cancellation request for your appointment and it is now cancelled.\n\n❖ *Date:* ${a.appointment_date}\n❖ *Time:* ${a.appointment_time}\n❖ *Service:* ${a.service}\n\nWe hope to serve you in the future. ❖`;
+        message = [
+          `*${D} Elite Glow Salon*`,
+          `*Appointment Cancelled*`,
+          SEP,
+          ``,
+          `Hello *${a.customer_name}*,`,
+          `Your appointment has been *cancelled* as requested.`,
+          ``,
+          `*${D} Appointment Details*`,
+          `${D} Service: ${a.service}`,
+          `${D} Date: ${a.appointment_date}`,
+          ``,
+          SEP,
+          `We hope to welcome you back soon!`,
+          `_Warm regards, Elite Glow Salon_`,
+        ].join("\n");
         break;
+
       case "completed":
-        message = `Hello ${a.customer_name}! ❖\n\nThank you for visiting *Elite Glow Salon*.\n\n❖ *Date:* ${a.appointment_date}\n❖ *Service:* ${a.service}\n\nWe hope you loved our service! ❖`;
+        message = [
+          `*${D} Elite Glow Salon*`,
+          `*Visit Completed - Thank You!*`,
+          SEP,
+          ``,
+          `Hello *${a.customer_name}*,`,
+          `Thank you so much for visiting us today!`,
+          ``,
+          `*${D} Visit Summary*`,
+          `${D} Service: ${a.service}`,
+          `${D} Date: ${a.appointment_date}`,
+          ``,
+          SEP,
+          `We'd love to hear your feedback!`,
+          `Share the glow with your friends and family.`,
+          `_Thank you for choosing Elite Glow Salon!_`,
+        ].join("\n");
         break;
     }
 

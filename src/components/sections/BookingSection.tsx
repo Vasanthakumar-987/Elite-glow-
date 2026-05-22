@@ -64,9 +64,26 @@ export const BookingSection: React.FC = () => {
       setStatus("success");
       // Send WhatsApp confirmation after 1.5s
       setTimeout(() => {
-        const waMsg = encodeURIComponent(
-          `Hello Elite Glow Salon! ❖\n\nI'd like to confirm my appointment booking.\n\n❖ *Name:* ${form.customer_name}\n❖ *Phone:* ${form.customer_phone}\n❖ *Service:* ${form.service}\n❖ *Date:* ${form.appointment_date}\n❖ *Time:* ${form.appointment_time}${form.notes ? `\n\n❖ *Notes:* ${form.notes}` : ""}\n\nLooking forward to visiting Elite Glow Salon! ❖`
-        );
+        // U+2756 ❖ — confirmed to render correctly on all WhatsApp versions
+        const D = "\u2756";
+        const SEP = "- - - - - - - - - - - -";
+        const lines = [
+          `*${D} Elite Glow Salon*`,
+          `*New Appointment Request*`,
+          SEP,
+          ``,
+          `*${D} Booking Details*`,
+          `${D} Name: ${form.customer_name}`,
+          `${D} Phone: ${form.customer_phone}`,
+          `${D} Service: ${form.service}`,
+          `${D} Date: ${form.appointment_date}`,
+          `${D} Time: ${form.appointment_time}`,
+          ...(form.notes ? [`${D} Notes: ${form.notes}`] : []),
+          ``,
+          SEP,
+          `_Please confirm my appointment. Thank you!_`,
+        ];
+        const waMsg = encodeURIComponent(lines.join("\n"));
         window.open(`https://wa.me/919042414664?text=${waMsg}`, "_blank");
       }, 1500);
       setForm(EMPTY_FORM);
